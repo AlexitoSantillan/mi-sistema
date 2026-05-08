@@ -91,3 +91,49 @@ table th {
   background: #1e293b;
   color: white;
 }
+
+/* DASHBOARD KPI */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.circle-card {
+  height: 180px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.circle-card h2 {
+  font-size: 40px;
+}
+
+.circle-card p {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.green {
+  background: #16a34a;
+}
+
+.yellow {
+  background: #eab308;
+}
+
+.red {
+  background: #dc2626;
+}
+
+.blue {
+  background: #2563eb;
+}
