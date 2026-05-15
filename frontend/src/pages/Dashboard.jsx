@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { testBackend } from "../services/api";
 
+import "../styles/dashboard.css";
+
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -20,39 +29,109 @@ function Dashboard() {
     });
   }, []);
 
-  // GRAFICO TEMPORAL
+  // DATOS
   const data = [
-    { fecha: "Lun", ventas: 10 },
-    { fecha: "Mar", ventas: 25 },
-    { fecha: "Mié", ventas: 15 },
-    { fecha: "Jue", ventas: 30 },
-    { fecha: "Vie", ventas: 18 },
-    { fecha: "Sáb", ventas: 40 },
-    { fecha: "Dom", ventas: 22 },
+    { fecha: "Ene", ventas: 40 },
+    { fecha: "Feb", ventas: 65 },
+    { fecha: "Mar", ventas: 30 },
+    { fecha: "Abr", ventas: 90 },
+    { fecha: "May", ventas: 75 },
+    { fecha: "Jun", ventas: 120 },
+    { fecha: "Jul", ventas: 100 },
   ];
 
-  // CIRCULOS KPI
+  // PIE
+  const pieData = [
+    { name: "Vigentes", value: 120 },
+    { name: "Por vencer", value: 15 },
+    { name: "Vencidos", value: 4 },
+  ];
+
+  const COLORS = [
+    "#0f766e",
+    "#ca8a04",
+    "#dc2626",
+  ];
+
+  // KPI
   const dashboard = {
-    vigentes: 120,
-    porVencer: 15,
+    ventas: 1250,
+    ganancia: "S/ 15,800",
     vencidos: 4,
     total: 139,
   };
 
   return (
-    <div className="container">
-      <div className="card">
-        <h2>Dashboard</h2>
+    <div className="dashboard-page">
 
-        <p>{mensaje}</p>
+      {/* HEADER */}
+      <div className="dashboard-header">
+        <div>
+          <h1>Dashboard Empresarial</h1>
+          <p>{mensaje}</p>
+        </div>
 
-        <hr style={{ margin: "20px 0" }} />
+        <h2>
+          Sistema de Vencimientos
+        </h2>
+      </div>
 
-        {/* GRAFICO */}
-        <h3>Ventas Semanales</h3>
+      {/* KPI */}
+      <div className="kpi-grid">
 
-        <div style={{ width: "100%", height: 300 }}>
-          <ResponsiveContainer>
+        <div className="kpi-card kpi-blue">
+          <p>Ventas Totales</p>
+          <h2>{dashboard.ventas}</h2>
+        </div>
+
+        <div className="kpi-card kpi-green">
+          <p>Ganancia</p>
+          <h2>{dashboard.ganancia}</h2>
+        </div>
+
+        <div className="kpi-card kpi-yellow">
+          <p>Por Vencer</p>
+          <h2>15</h2>
+        </div>
+
+        <div className="kpi-card kpi-red">
+          <p>Vencidos</p>
+          <h2>{dashboard.vencidos}</h2>
+        </div>
+
+      </div>
+
+      {/* GRAFICOS */}
+      <div className="chart-grid">
+
+        {/* GRAFICO 1 */}
+        <div className="chart-card">
+          <h3>Ventas Mensuales</h3>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+
+              <XAxis dataKey="fecha" />
+
+              <YAxis />
+
+              <Tooltip />
+
+              <Bar
+                dataKey="ventas"
+                fill="#1e293b"
+                radius={[5, 5, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* GRAFICO 2 */}
+        <div className="chart-card">
+          <h3>Ventas Semanales</h3>
+
+          <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
 
@@ -65,42 +144,109 @@ function Dashboard() {
               <Line
                 type="monotone"
                 dataKey="ventas"
-                stroke="#2563eb"
-                strokeWidth={3}
+                stroke="#0f766e"
+                strokeWidth={4}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <hr style={{ margin: "30px 0" }} />
+        {/* GRAFICO 3 */}
+        <div className="chart-card">
+          <h3>Ventas Anuales</h3>
 
-        {/* CIRCULOS */}
-        <h3>Resumen de Productos</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
 
-        <div className="dashboard-grid">
+              <XAxis dataKey="fecha" />
 
-          <div className="circle-card green">
-            <h2>{dashboard.vigentes}</h2>
-            <p>Vigentes</p>
-          </div>
+              <YAxis />
 
-          <div className="circle-card yellow">
-            <h2>{dashboard.porVencer}</h2>
-            <p>Por vencer</p>
-          </div>
+              <Tooltip />
 
-          <div className="circle-card red">
-            <h2>{dashboard.vencidos}</h2>
-            <p>Vencidos</p>
-          </div>
-
-          <div className="circle-card blue">
-            <h2>{dashboard.total}</h2>
-            <p>Total</p>
-          </div>
-
+              <Area
+                type="monotone"
+                dataKey="ventas"
+                stroke="#7c3aed"
+                fill="#c4b5fd"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
+
+        {/* GRAFICO 4 */}
+        <div className="chart-card">
+          <h3>Estado Productos</h3>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                dataKey="value"
+                label
+              >
+
+                {pieData.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index]}
+                  />
+                ))}
+
+              </Pie>
+
+              <Tooltip />
+
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
       </div>
+
+      {/* TABLA */}
+      <div className="table-card">
+
+        <h3>
+          Productos Más Vendidos
+        </h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Ventas</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>Leche Gloria</td>
+              <td>120</td>
+              <td>Activo</td>
+            </tr>
+
+            <tr>
+              <td>Arroz Costeño</td>
+              <td>95</td>
+              <td>Activo</td>
+            </tr>
+
+            <tr>
+              <td>Galleta Soda</td>
+              <td>80</td>
+              <td>Por vencer</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
     </div>
   );
 }

@@ -7,12 +7,30 @@ function Navbar() {
   };
 
   return (
-    <div className="navbar">
-      <Link to="/">Dashboard</Link>
-      <Link to="/vencimientos">Vencimientos</Link>
+    <nav className="navbar">
 
-      <button onClick={logout}>Cerrar sesión</button>
-    </div>
+      {/* LOGO */}
+      <div className="navbar-logo">
+        Sistema Vencimiento Confiteria Albeyro
+      </div>
+
+      {/* MENUS */}
+      <div className="navbar-links">
+        <Link to="/">Dashboard</Link>
+
+        <Link to="/vencimientos">
+          Vencimientos
+        </Link>
+      </div>
+
+      {/* DERECHA */}
+      <div className="navbar-right">
+        <button onClick={logout}>
+          Cerrar sesión
+        </button>
+      </div>
+
+    </nav>
   );
 }
 

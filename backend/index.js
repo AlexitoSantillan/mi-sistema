@@ -54,6 +54,7 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       producto_id INTEGER,
       nombre TEXT,
+      lote TEXT,
       cantidad INTEGER,
       fecha_vencimiento TEXT,
       fecha_registro TEXT DEFAULT CURRENT_TIMESTAMP
@@ -114,12 +115,12 @@ app.post("/api/login", (req, res) => {
 
 // guardar vencimiento
 app.post("/api/vencimientos", (req, res) => {
-  const { producto_id, nombre, cantidad, fecha_vencimiento } = req.body;
+  const { producto_id, nombre, lote, cantidad, fecha_vencimiento } = req.body;
 
   db.run(
-    `INSERT INTO vencimientos (producto_id, nombre, cantidad, fecha_vencimiento)
-     VALUES (?, ?, ?, ?)`,
-    [producto_id, nombre, cantidad, fecha_vencimiento],
+    `INSERT INTO vencimientos (producto_id, nombre, lote, cantidad, fecha_vencimiento)
+     VALUES (?, ?, ?, ?, ?)`,
+    [producto_id, nombre, lote, cantidad, fecha_vencimiento],
     function (err) {
       if (err) {
         return res.json({ success: false, error: err.message });
@@ -147,12 +148,12 @@ app.get("/api/vencimientos", (req, res) => {
 
 // guardar stock diario
 app.post("/api/historial", (req, res) => {
-  const { producto_id, nombre, stock, fecha } = req.body;
+  const { producto_id, nombre, lote, stock, fecha } = req.body;
 
   db.run(
     `INSERT INTO historial_stock (producto_id, nombre, stock, fecha)
-     VALUES (?, ?, ?, ?)`,
-    [producto_id, nombre, stock, fecha],
+     VALUES (?, ?, ?, ?, ?)`,
+    [producto_id, nombre, lote, stock, fecha],
     function (err) {
       if (err) {
         return res.json({ success: false, error: err.message });

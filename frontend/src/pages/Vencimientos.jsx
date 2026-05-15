@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { exportarPDF } from "../utils/exportarPDF";
 
 function Vencimientos() {
   const [productos] = useState([
@@ -9,10 +10,36 @@ function Vencimientos() {
 
   const [productoSeleccionado, setProductoSeleccionado] = useState("");
   const [cantidad, setCantidad] = useState("");
+  const [lote, setLote] = useState("");
   const [fecha, setFecha] = useState("");
 
+  const [historial, setHistorial] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+
+  // CARGAR HISTORIAL
+  const cargarHistorial = async () => {
+    try {
+      const res = await fetch("/api/vencimientos");
+      const data = await res.json();
+
+      setHistorial(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    cargarHistorial();
+  }, []);
+
+  // GUARDAR
   const guardar = async () => {
-    if (!productoSeleccionado || !cantidad || !fecha) {
+    if (
+      !productoSeleccionado ||
+      !cantidad ||
+      !fecha ||
+      !lote
+    ) {
       alert("Completa todos los campos");
       return;
     }
@@ -30,6 +57,7 @@ function Vencimientos() {
         body: JSON.stringify({
           producto_id: producto.id,
           nombre: producto.nombre,
+          lote,
           cantidad,
           fecha_vencimiento: fecha,
         }),
@@ -42,26 +70,43 @@ function Vencimientos() {
 
         setProductoSeleccionado("");
         setCantidad("");
+        setLote("");
         setFecha("");
+
+        cargarHistorial();
       }
     } catch (error) {
       alert("Error al conectar");
     }
   };
 
+  // FILTRAR BUSQUEDA
+  const filtrados = historial.filter((item) => {
+    const texto = busqueda.toLowerCase();
+
+    return (
+      item.nombre?.toLowerCase().includes(texto) ||
+      item.lote?.toString().toLowerCase().includes(texto) ||
+      item.fecha_vencimiento?.toLowerCase().includes(texto) ||
+      item.cantidad?.toString().includes(texto)
+    );
+  });
+
   return (
     <div className="container">
       <div className="card">
         <h2>Registrar Vencimiento</h2>
 
-        {/* SELECT PRODUCTOS */}
+        {/* SELECT */}
         <select
           value={productoSeleccionado}
           onChange={(e) =>
             setProductoSeleccionado(e.target.value)
           }
         >
-          <option value="">Seleccionar producto</option>
+          <option value="">
+            Seleccionar producto
+          </option>
 
           {productos.map((p) => (
             <option key={p.id} value={p.id}>
@@ -70,13 +115,27 @@ function Vencimientos() {
           ))}
         </select>
 
+        {/* CANTIDAD */}
         <input
           type="number"
           placeholder="Cantidad"
           value={cantidad}
-          onChange={(e) => setCantidad(e.target.value)}
+          onChange={(e) =>
+            setCantidad(e.target.value)
+          }
         />
 
+        {/* LOTE */}
+        <input
+          type="text"
+          placeholder="Lote"
+          value={lote}
+          onChange={(e) =>
+            setLote(e.target.value)
+          }
+        />
+
+        {/* FECHA */}
         <input
           type="date"
           value={fecha}
@@ -86,6 +145,47 @@ function Vencimientos() {
         <button onClick={guardar}>
           Guardar
         </button>
+
+        <button onClick={() => exportarPDF(filtrados)}>
+          Exportar PDF
+        </button>
+
+        <hr style={{ margin: "30px 0" }} />
+
+        <h3>Historial de Vencimientos</h3>
+
+        {/* BUSCADOR */}
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          value={busqueda}
+          onChange={(e) =>
+            setBusqueda(e.target.value)
+          }
+        />
+
+        {/* TABLA */}
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Lote</th>
+              <th>Cantidad</th>
+              <th>Fecha Vencimiento</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtrados.map((item) => (
+              <tr key={item.id}>
+                <td>{item.nombre}</td>
+                <td>{item.lote}</td>
+                <td>{item.cantidad}</td>
+                <td>{item.fecha_vencimiento}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
