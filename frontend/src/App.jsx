@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/layout/Navbar";
 import Vencimientos from "./pages/Vencimientos";
 import "./index.css";
 

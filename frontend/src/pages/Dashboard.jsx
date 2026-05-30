@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { testBackend } from "../services/api";
+
+import api from "../services/api";
 
 import "../styles/dashboard.css";
 
+import KpiCard from "../components/dashboard/cards/KpiCard";
+import CriticalTable from "../components/dashboard/tables/CriticalTable";
+
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
-  AreaChart,
-  Area,
   PieChart,
   Pie,
   Cell,
@@ -18,148 +18,215 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  AreaChart,
+  Area,
 } from "recharts";
 
 function Dashboard() {
-  const [mensaje, setMensaje] = useState("");
 
+  const [dashboard, setDashboard] = useState(null);
+
+  const [stockGeneral, setStockGeneral] = useState([]);
+  const [controlStock, setControlStock] = useState([]);
+  const [vencimientosEstado, setVencimientosEstado] = useState([]);
+
+  // =========================
+  // LOAD DATA
+  // =========================
   useEffect(() => {
-    testBackend().then((data) => {
-      setMensaje(data.mensaje);
-    });
+    cargarDatos();
   }, []);
 
-  // DATOS
-  const data = [
-    { fecha: "Ene", ventas: 40 },
-    { fecha: "Feb", ventas: 65 },
-    { fecha: "Mar", ventas: 30 },
-    { fecha: "Abr", ventas: 90 },
-    { fecha: "May", ventas: 75 },
-    { fecha: "Jun", ventas: 120 },
-    { fecha: "Jul", ventas: 100 },
-  ];
+  const cargarDatos = async () => {
 
-  // PIE
-  const pieData = [
-    { name: "Vigentes", value: 120 },
-    { name: "Por vencer", value: 15 },
-    { name: "Vencidos", value: 4 },
-  ];
+    try {
+
+      // KPIS
+      const dashboardRes = await api.get("/dashboard");
+      setDashboard(dashboardRes.data);
+
+      // TOP STOCK
+      const stockRes = await api.get("/dashboard/stock-general");
+      setStockGeneral(stockRes.data.slice(0, 5));
+
+      // MENOS STOCK
+      const controlRes = await api.get("/dashboard/control-stock");
+      setControlStock(controlRes.data.slice(0, 5));
+
+      // ESTADO VENCIMIENTOS
+      const estadoRes = await api.get("/dashboard/vencimientos-estado");
+      setVencimientosEstado(estadoRes.data);
+
+    } catch (error) {
+      console.error("ERROR DASHBOARD:", error);
+    }
+
+  };
+
+  // =========================
+  // LOADING
+  // =========================
+  if (!dashboard) {
+    return (
+      <div className="dashboard-loading">
+        <h1>Cargando dashboard...</h1>
+      </div>
+    );
+  }
+
+  // =========================
+  // PIE DATA
+  // =========================
+  const pieData = vencimientosEstado;
 
   const COLORS = [
     "#0f766e",
     "#ca8a04",
     "#dc2626",
+    "#2563eb",
+    "#9333ea",
+    "#ea580c",
   ];
 
-  // KPI
-  const dashboard = {
-    ventas: 1250,
-    ganancia: "S/ 15,800",
-    vencidos: 4,
-    total: 139,
-  };
+  // =========================
+  // AREA DATA
+  // =========================
+  const areaData = [
+    { name: "Semana 1", productos: 120 },
+    { name: "Semana 2", productos: 180 },
+    { name: "Semana 3", productos: 240 },
+    { name: "Semana 4", productos: 300 },
+  ];
 
   return (
     <div className="dashboard-page">
 
       {/* HEADER */}
       <div className="dashboard-header">
+
         <div>
-          <h1>Dashboard Empresarial</h1>
-          <p>{mensaje}</p>
+          <h1>Panel de Control Empresarial</h1>
+          <p>Albeyro ERP</p>
         </div>
 
-        <h2>
-          Sistema de Vencimientos
-        </h2>
+        <h2>Sistema de Inventario</h2>
+
       </div>
 
       {/* KPI */}
       <div className="kpi-grid">
 
-        <div className="kpi-card kpi-blue">
-          <p>Ventas Totales</p>
-          <h2>{dashboard.ventas}</h2>
-        </div>
+        <KpiCard
+          title="Total Productos"
+          value={dashboard.totalProductos || 0}
+          color="kpi-blue"
+        />
 
-        <div className="kpi-card kpi-green">
-          <p>Ganancia</p>
-          <h2>{dashboard.ganancia}</h2>
-        </div>
+        <KpiCard
+          title="Stock Total"
+          value={dashboard.existenciaTotal || 0}
+          color="kpi-green"
+        />
 
-        <div className="kpi-card kpi-yellow">
-          <p>Por Vencer</p>
-          <h2>15</h2>
-        </div>
+        <KpiCard
+          title="Bajo Stock"
+          value={dashboard.bajoStock || 0}
+          color="kpi-yellow"
+        />
 
-        <div className="kpi-card kpi-red">
-          <p>Vencidos</p>
-          <h2>{dashboard.vencidos}</h2>
-        </div>
+        <KpiCard
+          title="Vencidos"
+          value={dashboard.vencidos || 0}
+          color="kpi-red"
+        />
 
       </div>
 
-      {/* GRAFICOS */}
+      {/* CHARTS */}
       <div className="chart-grid">
 
-        {/* GRAFICO 1 */}
+        {/* STOCK GENERAL */}
         <div className="chart-card">
-          <h3>Ventas Mensuales</h3>
 
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
+          <h3>Top 5 Productos con Más Stock</h3>
+
+          <ResponsiveContainer width="100%" height={320}>
+
+            <BarChart data={stockGeneral}>
+
               <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis dataKey="fecha" />
+              <XAxis
+                dataKey="name"
+                interval={0}
+                tick={{
+                  fontSize: 10
+                }}
+              />
 
               <YAxis />
 
               <Tooltip />
 
               <Bar
-                dataKey="ventas"
+                dataKey="stock"
                 fill="#1e293b"
-                radius={[5, 5, 0, 0]}
+                radius={[8, 8, 0, 0]}
               />
+
             </BarChart>
+
           </ResponsiveContainer>
+
         </div>
 
-        {/* GRAFICO 2 */}
+        {/* CONTROL STOCK */}
         <div className="chart-card">
-          <h3>Ventas Semanales</h3>
 
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
+          <h3>Top 5 Productos con Menor Stock</h3>
+
+          <ResponsiveContainer width="100%" height={320}>
+
+            <BarChart data={controlStock}>
+
               <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis dataKey="fecha" />
+              <XAxis
+                dataKey="name"
+                interval={0}
+                tick={{
+                  fontSize: 10
+                }}
+              />
 
               <YAxis />
 
               <Tooltip />
 
-              <Line
-                type="monotone"
-                dataKey="ventas"
-                stroke="#0f766e"
-                strokeWidth={4}
+              <Bar
+                dataKey="stock"
+                fill="#dc2626"
+                radius={[8, 8, 0, 0]}
               />
-            </LineChart>
+
+            </BarChart>
+
           </ResponsiveContainer>
+
         </div>
 
-        {/* GRAFICO 3 */}
+        {/* PRODUCTOS REGISTRADOS */}
         <div className="chart-card">
-          <h3>Ventas Anuales</h3>
 
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data}>
+          <h3>Movimiento de Productos</h3>
+
+          <ResponsiveContainer width="100%" height={320}>
+
+            <AreaChart data={areaData}>
+
               <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis dataKey="fecha" />
+              <XAxis dataKey="name" />
 
               <YAxis />
 
@@ -167,34 +234,40 @@ function Dashboard() {
 
               <Area
                 type="monotone"
-                dataKey="ventas"
+                dataKey="productos"
                 stroke="#7c3aed"
                 fill="#c4b5fd"
               />
+
             </AreaChart>
+
           </ResponsiveContainer>
+
         </div>
 
-        {/* GRAFICO 4 */}
+        {/* PIE */}
         <div className="chart-card">
-          <h3>Estado Productos</h3>
 
-          <ResponsiveContainer width="100%" height={300}>
+          <h3>Estados de Productos</h3>
+
+          <ResponsiveContainer width="100%" height={320}>
+
             <PieChart>
 
               <Pie
                 data={pieData}
+                dataKey="value"
+                nameKey="name"
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                dataKey="value"
                 label
               >
 
                 {pieData.map((entry, index) => (
                   <Cell
                     key={index}
-                    fill={COLORS[index]}
+                    fill={COLORS[index % COLORS.length]}
                   />
                 ))}
 
@@ -203,7 +276,9 @@ function Dashboard() {
               <Tooltip />
 
             </PieChart>
+
           </ResponsiveContainer>
+
         </div>
 
       </div>
@@ -211,39 +286,9 @@ function Dashboard() {
       {/* TABLA */}
       <div className="table-card">
 
-        <h3>
-          Productos Más Vendidos
-        </h3>
+        <h3>Productos Críticos</h3>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Ventas</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>Leche Gloria</td>
-              <td>120</td>
-              <td>Activo</td>
-            </tr>
-
-            <tr>
-              <td>Arroz Costeño</td>
-              <td>95</td>
-              <td>Activo</td>
-            </tr>
-
-            <tr>
-              <td>Galleta Soda</td>
-              <td>80</td>
-              <td>Por vencer</td>
-            </tr>
-          </tbody>
-        </table>
+        <CriticalTable />
 
       </div>
 
