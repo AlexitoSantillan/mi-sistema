@@ -161,48 +161,33 @@ const getVencimientosEstado = (req, res) => {
   db.all(`
     SELECT
       CASE
-
-        WHEN (
-          julianday(fecha_vencimiento) - julianday('now')
-        ) <= 30
-        THEN '1 Mes'
-
-        WHEN (
-          julianday(fecha_vencimiento) - julianday('now')
-        ) <= 60
-        THEN '2 Meses'
-
-        WHEN (
-          julianday(fecha_vencimiento) - julianday('now')
-        ) <= 90
-        THEN '3 Meses'
-
-        WHEN (
-          julianday(fecha_vencimiento) - julianday('now')
-        ) <= 180
-        THEN '6 Meses'
-
-        ELSE 'Más de 6 Meses'
-
+        WHEN (julianday(fecha_vencimiento) - julianday('now')) <= 90 THEN 'ROJO'
+        WHEN (julianday(fecha_vencimiento) - julianday('now')) <= 180 THEN 'AMARILLO'
+        ELSE 'VERDE'
       END AS name,
-
       COUNT(*) AS value
-
     FROM vencimientos
-
     GROUP BY name
   `, [], (err, rows) => {
 
     if (err) {
-      return res.status(500).json({
-        error: err.message
-      });
+      return res.status(500).json({ error: err.message });
     }
 
-    res.json(rows);
+    // 🔥 IMPORTANTE: asegurar siempre los 3 colores
+    const fixed = [
+      { name: "ROJO", value: 0 },
+      { name: "AMARILLO", value: 0 },
+      { name: "VERDE", value: 0 },
+    ];
 
+    rows.forEach(r => {
+      const item = fixed.find(f => f.name === r.name);
+      if (item) item.value = r.value;
+    });
+
+    res.json(fixed);
   });
-
 };
 
 // =========================

@@ -79,14 +79,11 @@ function Dashboard() {
   // =========================
   const pieData = vencimientosEstado;
 
-  const COLORS = [
-    "#0f766e",
-    "#ca8a04",
-    "#dc2626",
-    "#2563eb",
-    "#9333ea",
-    "#ea580c",
-  ];
+  const COLORS = {
+    ROJO: "#dc2626",
+    AMARILLO: "#facc15",
+    VERDE: "#22c55e",
+  };
 
   // =========================
   // AREA DATA
@@ -252,30 +249,26 @@ function Dashboard() {
 
           <ResponsiveContainer width="100%" height={320}>
 
-            <PieChart>
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={110}
+              label
+            >
+              {pieData.map((entry, index) => (
+                <Cell
+                  key={index}
+                  fill={COLORS[entry.name] || "#999"}
+                />
+              ))}
+            </Pie>
 
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label
-              >
-
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-
-              </Pie>
-
-              <Tooltip />
-
-            </PieChart>
+            <Tooltip />
+          </PieChart>
 
           </ResponsiveContainer>
 

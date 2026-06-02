@@ -52,9 +52,40 @@ db.serialize(() => {
       fecha TEXT,
       total_productos INTEGER,
       stock_total REAL
-    );
+    )
+  `);
 
-  `)
+  // =========================
+  // ALERTAS
+  // =========================
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alertas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      vencimiento_id INTEGER,
+      producto_codigo TEXT,
+      producto_nombre TEXT,
+      lote TEXT,
+      dias_restantes INTEGER,
+      nivel_alerta INTEGER,
+      mensaje TEXT,
+      fecha_generada DATETIME DEFAULT CURRENT_TIMESTAMP,
+      leida INTEGER DEFAULT 0
+    )
+  `);
+
+  // =========================
+  // CONTROL ALERTAS ENVIADAS
+  // =========================
+  db.run(`
+    CREATE TABLE IF NOT EXISTS alertas_enviadas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      vencimiento_id INTEGER,
+      lote TEXT,
+      fecha_vencimiento TEXT,
+      dias_alerta INTEGER,
+      fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 
 });
 

@@ -11,15 +11,16 @@ const getVencimientos = (req, res) => {
       v.producto_codigo,
       p.descripcion AS nombre,
       v.lote,
+      v.cantidad,
       v.fecha_vencimiento,
 
       (
-        (COALESCE(p.stock_en_cajas,0) *
-        COALESCE(p.cantidad_por_caja,0))
+        (COALESCE(p.stock_en_cajas, 0) *
+        COALESCE(p.cantidad_por_caja, 0))
 
         +
 
-        COALESCE(p.stock_en_unidades,0)
+        COALESCE(p.stock_en_unidades, 0)
 
       ) AS cantidad_real
 
@@ -32,13 +33,8 @@ const getVencimientos = (req, res) => {
   `, [], (err, rows) => {
 
     if (err) {
-
       console.log(err);
-
-      return res.status(500).json({
-        error: err.message
-      });
-
+      return res.status(500).json({ error: err.message });
     }
 
     res.json(rows);
@@ -69,47 +65,27 @@ const createVencimiento = (req, res) => {
   `, [producto_codigo], (err, producto) => {
 
     if (err) {
-
       console.log(err);
-
-      return res.status(500).json({
-        error: err.message
-      });
-
+      return res.status(500).json({ error: err.message });
     }
 
     if (!producto) {
-
-      return res.status(404).json({
-        error: "Producto no encontrado"
-      });
-
+      return res.status(404).json({ error: "Producto no encontrado" });
     }
 
     // =========================
     // STOCK REAL
     // =========================
-    const cajas =
-      Number(producto.stock_en_cajas || 0);
-
-    const unidades =
-      Number(producto.stock_en_unidades || 0);
-
-    const porCaja =
-      Number(producto.cantidad_por_caja || 0);
-
-    const stockTotal =
-      (cajas * porCaja) + unidades;
+    const cajas = Number(producto.stock_en_cajas || 0);
+    const unidades = Number(producto.stock_en_unidades || 0);
+    const porCaja = Number(producto.cantidad_por_caja || 0);
+    const stockTotal = (cajas * porCaja) + unidades;
 
     // =========================
     // VALIDAR STOCK
     // =========================
     if (Number(cantidad) > stockTotal) {
-
-      return res.status(400).json({
-        error: "Stock insuficiente"
-      });
-
+      return res.status(400).json({ error: "Stock insuficiente" });
     }
 
     // =========================
@@ -125,29 +101,19 @@ const createVencimiento = (req, res) => {
       )
       VALUES (?, ?, ?, ?, ?)
     `, [
-
       producto_codigo,
       lote,
       cantidad,
       fecha_vencimiento,
       "OK"
-
     ], function (err) {
 
       if (err) {
-
         console.log(err);
-
-        return res.status(500).json({
-          error: err.message
-        });
-
+        return res.status(500).json({ error: err.message });
       }
 
-      res.json({
-        success: true,
-        id: this.lastID
-      });
+      res.json({ success: true, id: this.lastID });
 
     });
 
@@ -163,39 +129,61 @@ const updateVencimiento = (req, res) => {
   const { id } = req.params;
 
   const {
+    producto_codigo,
     lote,
     cantidad,
     fecha_vencimiento
   } = req.body;
 
-  db.run(`
-    UPDATE vencimientos
-    SET
-      lote = ?,
-      cantidad = ?,
-      fecha_vencimiento = ?
-    WHERE id = ?
-  `, [
-
-    lote,
-    cantidad,
-    fecha_vencimiento,
-    id
-
-  ], (err) => {
+  // FIX: validar stock al editar, igual que en crear
+  db.get(`
+    SELECT
+      stock_en_cajas,
+      stock_en_unidades,
+      cantidad_por_caja
+    FROM productos
+    WHERE codigo = ?
+  `, [producto_codigo], (err, producto) => {
 
     if (err) {
-
       console.log(err);
-
-      return res.status(500).json({
-        error: err.message
-      });
-
+      return res.status(500).json({ error: err.message });
     }
 
-    res.json({
-      success: true
+    if (!producto) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    const cajas = Number(producto.stock_en_cajas || 0);
+    const unidades = Number(producto.stock_en_unidades || 0);
+    const porCaja = Number(producto.cantidad_por_caja || 0);
+    const stockTotal = (cajas * porCaja) + unidades;
+
+    if (Number(cantidad) > stockTotal) {
+      return res.status(400).json({ error: "Stock insuficiente" });
+    }
+
+    db.run(`
+      UPDATE vencimientos
+      SET
+        lote = ?,
+        cantidad = ?,
+        fecha_vencimiento = ?
+      WHERE id = ?
+    `, [
+      lote,
+      cantidad,
+      fecha_vencimiento,
+      id
+    ], (err) => {
+
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: err.message });
+      }
+
+      res.json({ success: true });
+
     });
 
   });
@@ -215,18 +203,11 @@ const deleteVencimiento = (req, res) => {
   `, [id], (err) => {
 
     if (err) {
-
       console.log(err);
-
-      return res.status(500).json({
-        error: err.message
-      });
-
+      return res.status(500).json({ error: err.message });
     }
 
-    res.json({
-      success: true
-    });
+    res.json({ success: true });
 
   });
 
@@ -243,15 +224,16 @@ const getVencidos = (req, res) => {
       v.producto_codigo,
       p.descripcion AS nombre,
       v.lote,
+      v.cantidad,
       v.fecha_vencimiento,
 
       (
-        (COALESCE(p.stock_en_cajas,0) *
-        COALESCE(p.cantidad_por_caja,0))
+        (COALESCE(p.stock_en_cajas, 0) *
+        COALESCE(p.cantidad_por_caja, 0))
 
         +
 
-        COALESCE(p.stock_en_unidades,0)
+        COALESCE(p.stock_en_unidades, 0)
 
       ) AS cantidad_real
 
@@ -266,11 +248,7 @@ const getVencidos = (req, res) => {
   `, [], (err, rows) => {
 
     if (err) {
-
-      return res.status(500).json({
-        error: err.message
-      });
-
+      return res.status(500).json({ error: err.message });
     }
 
     res.json(rows);
