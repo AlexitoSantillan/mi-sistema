@@ -1,5 +1,9 @@
 require("dotenv").config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET no esta definido. Configuralo en backend/.env antes de iniciar el servidor.");
+}
+
 const express = require("express");
 const cors = require("cors");
 

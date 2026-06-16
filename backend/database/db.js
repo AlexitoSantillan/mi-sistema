@@ -1,4 +1,5 @@
 const path = require("path");
+const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 
 // =========================
@@ -20,6 +21,44 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // CREAR TABLAS
 // =========================
 db.serialize(() => {
+  // =========================
+  // USUARIOS
+  // =========================
+  db.run(`
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL
+    )
+  `);
+
+  db.get(
+    "SELECT id FROM usuarios WHERE username = ?",
+    ["admin"],
+    (err, row) => {
+      if (err) {
+        console.error("Error verificando usuario admin", err);
+        return;
+      }
+
+      if (!row) {
+        const adminPassword = process.env.ADMIN_PASSWORD || "admin";
+        const passwordHash = bcrypt.hashSync(adminPassword, 10);
+
+        db.run(
+          "INSERT INTO usuarios (username, password_hash) VALUES (?, ?)",
+          ["admin", passwordHash],
+          (err) => {
+            if (err) {
+              console.error("Error creando usuario admin", err);
+            } else {
+              console.log("Usuario admin creado por defecto");
+            }
+          }
+        );
+      }
+    }
+  );
 
   // =========================
   // PRODUCTOS

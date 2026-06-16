@@ -1,6 +1,7 @@
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET || "albeyro_secret_123";
+const db = require("../database/db");
 
 const login = (req, res) => {
   const { username, password } = req.body;
@@ -12,23 +13,45 @@ const login = (req, res) => {
     });
   }
 
-  if (username === "admin" && password === "admin") {
-    const token = jwt.sign(
-      { username },
-      JWT_SECRET,
-      { expiresIn: "8h" }
-    );
+  db.get(
+    "SELECT id, username, password_hash FROM usuarios WHERE username = ?",
+    [String(username).trim()],
+    async (err, user) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Error consultando usuario",
+        });
+      }
 
-    return res.json({
-      success: true,
-      token,
-    });
-  }
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Credenciales incorrectas",
+        });
+      }
 
-  return res.status(401).json({
-    success: false,
-    message: "Credenciales incorrectas",
-  });
+      const passwordOk = await bcrypt.compare(password, user.password_hash);
+
+      if (!passwordOk) {
+        return res.status(401).json({
+          success: false,
+          message: "Credenciales incorrectas",
+        });
+      }
+
+      const token = jwt.sign(
+        { id: user.id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: "8h" }
+      );
+
+      return res.json({
+        success: true,
+        token,
+      });
+    }
+  );
 };
 
 module.exports = { login };

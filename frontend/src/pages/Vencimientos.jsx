@@ -73,6 +73,11 @@ function Vencimientos() {
   };
 
   // =========================
+  // STOCK ACTUAL
+  // =========================
+  const stockActual = productoSeleccionado?.stock || 0;
+
+  // =========================
   // GUARDAR
   // =========================
   const guardar = async () => {
@@ -171,11 +176,6 @@ function Vencimientos() {
   const ultimoRegistro = paginaActual * registrosPorPagina;
   const primerRegistro = ultimoRegistro - registrosPorPagina;
   const datosPagina = filtrados.slice(primerRegistro, ultimoRegistro);
-
-  // =========================
-  // STOCK ACTUAL
-  // =========================
-  const stockActual = productoSeleccionado?.stock || 0;
 
   // =========================
   // UI

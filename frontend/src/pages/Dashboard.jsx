@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
-import api from "../services/api";
+import {
+  getControlStock,
+  getDashboard,
+  getStockGeneral,
+  getVencimientosEstado,
+} from "../services/dashboardApi";
 
 import "../styles/dashboard.css";
 
@@ -35,20 +40,20 @@ function Dashboard() {
     try {
 
       // KPIS
-      const dashboardRes = await api.get("/dashboard");
-      setDashboard(dashboardRes.data);
+      const dashboardData = await getDashboard();
+      setDashboard(dashboardData);
 
       // TOP STOCK
-      const stockRes = await api.get("/dashboard/stock-general");
-      setStockGeneral(stockRes.data.slice(0, 5));
+      const stockData = await getStockGeneral();
+      setStockGeneral(stockData.slice(0, 5));
 
       // MENOS STOCK
-      const controlRes = await api.get("/dashboard/control-stock");
-      setControlStock(controlRes.data.slice(0, 5));
+      const controlData = await getControlStock();
+      setControlStock(controlData.slice(0, 5));
 
       // ESTADO VENCIMIENTOS
-      const estadoRes = await api.get("/dashboard/vencimientos-estado");
-      setVencimientosEstado(estadoRes.data);
+      const estadoData = await getVencimientosEstado();
+      setVencimientosEstado(estadoData);
 
     } catch (error) {
       console.error("ERROR DASHBOARD:", error);

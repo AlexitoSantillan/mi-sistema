@@ -9,11 +9,10 @@ const {
   getVencidos
 } = require("../controllers/vencimientoController");
 
+router.get("/vencidos", getVencidos);
 router.get("/", getVencimientos);
 router.post("/", createVencimiento);
 router.put("/:id", updateVencimiento);
 router.delete("/:id", deleteVencimiento);
-
-router.get("/vencidos", getVencidos);
 
 module.exports = router;
