@@ -20,7 +20,17 @@ export const getVencimientosEstado = async () => {
   return res.data;
 };
 
+export const getHistorialStock = async () => {
+  const res = await api.get("/dashboard/historial");
+  return res.data;
+};
+
 export const getCriticalProducts = async () => {
   const res = await api.get("/dashboard/criticos");
+  return res.data;
+};
+
+export const actualizarProductos = async () => {
+  const res = await api.post("/productos/importar");
   return res.data;
 };

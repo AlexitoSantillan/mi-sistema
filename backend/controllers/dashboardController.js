@@ -150,6 +150,22 @@ const getCriticalProducts = (req, res) => {
   });
 };
 
+const getHistorialStock = (req, res) => {
+  db.all(`
+    SELECT
+      date(fecha) AS fecha,
+      total_productos
+    FROM historial_stock
+    ORDER BY datetime(fecha) ASC
+  `, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    res.json(rows);
+  });
+};
+
 module.exports = {
   getDashboard,
   getStockGeneral,
@@ -157,4 +173,5 @@ module.exports = {
   getDistribucionStock,
   getVencimientosEstado,
   getCriticalProducts,
+  getHistorialStock,
 };

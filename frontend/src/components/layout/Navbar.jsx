@@ -7,6 +7,8 @@ function Navbar() {
 
   return (
     <nav className="navbar">
+      <img src="/Logo.png" alt="Logo Albeyro" style={{ height: "40px", objectFit: "contain" }} />
+
       <div className="navbar-logo">
         Sistema Vencimiento Confiteria Albeyro
       </div>

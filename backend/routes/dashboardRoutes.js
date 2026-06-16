@@ -7,7 +7,8 @@ const {
   getControlStock,
   getDistribucionStock,
   getVencimientosEstado,
-  getCriticalProducts
+  getCriticalProducts,
+  getHistorialStock
 } = require("../controllers/dashboardController");
 
 // =========================
@@ -25,6 +26,8 @@ router.get("/control-stock", getControlStock);
 router.get("/distribucion-stock", getDistribucionStock);
 
 router.get("/vencimientos-estado", getVencimientosEstado);
+
+router.get("/historial", getHistorialStock);
 
 // =========================
 // PRODUCTOS CRITICOS

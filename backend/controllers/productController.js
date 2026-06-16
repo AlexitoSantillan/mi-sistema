@@ -1,4 +1,5 @@
 const db = require("../database/db");
+const { importarProductos } = require("../services/importarProductos");
 
 // =========================
 // LISTAR PRODUCTOS
@@ -26,7 +27,7 @@ const getProducts = (req, res) => {
   `, [], (err, rows) => {
 
     if (err) {
-      console.log("SQL ERROR:", err.message);
+      console.error("SQL ERROR:", err.message);
 
       return res.status(500).json({
         error: err.message
@@ -39,6 +40,30 @@ const getProducts = (req, res) => {
 
 };
 
+const importarProductosHandler = async (req, res) => {
+  try {
+    const resultado = await importarProductos();
+
+    if (resultado.success) {
+      return res.json({
+        success: true,
+        totalImportados: resultado.totalImportados
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: "No se pudo importar"
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+};
+
 module.exports = {
-  getProducts
+  getProducts,
+  importarProductosHandler
 };

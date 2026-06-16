@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 
 import {
+  actualizarProductos,
   getControlStock,
   getDashboard,
+  getHistorialStock,
   getStockGeneral,
   getVencimientosEstado,
 } from "../services/dashboardApi";
@@ -34,6 +36,8 @@ function Dashboard() {
   const [stockGeneral, setStockGeneral] = useState([]);
   const [controlStock, setControlStock] = useState([]);
   const [vencimientosEstado, setVencimientosEstado] = useState([]);
+  const [historialStock, setHistorialStock] = useState([]);
+  const [importando, setImportando] = useState(false);
 
   const cargarDatos = async () => {
 
@@ -55,10 +59,34 @@ function Dashboard() {
       const estadoData = await getVencimientosEstado();
       setVencimientosEstado(estadoData);
 
+      // HISTORIAL STOCK
+      const historialData = await getHistorialStock();
+      setHistorialStock(
+        historialData.map((item) => ({
+          name: item.fecha,
+          productos: item.total_productos,
+        }))
+      );
+
     } catch (error) {
       console.error("ERROR DASHBOARD:", error);
     }
 
+  };
+
+  const handleActualizar = async () => {
+    setImportando(true);
+
+    try {
+      const result = await actualizarProductos();
+      alert(`✅ Productos actualizados: ${result.totalImportados}`);
+      cargarDatos();
+    } catch (err) {
+      console.error("ERROR ACTUALIZANDO PRODUCTOS:", err);
+      alert("❌ Error al actualizar productos. Verifica que el archivo productos.sql exista en D:\\generar_sql\\");
+    } finally {
+      setImportando(false);
+    }
   };
 
   // =========================
@@ -93,12 +121,7 @@ function Dashboard() {
   // =========================
   // AREA DATA
   // =========================
-  const areaData = [
-    { name: "Semana 1", productos: 120 },
-    { name: "Semana 2", productos: 180 },
-    { name: "Semana 3", productos: 240 },
-    { name: "Semana 4", productos: 300 },
-  ];
+  const areaData = historialStock;
 
   return (
     <div className="dashboard-page">
@@ -110,6 +133,22 @@ function Dashboard() {
           <h1>Panel de Control Empresarial</h1>
           <p>Albeyro ERP</p>
         </div>
+
+        <button
+          onClick={handleActualizar}
+          disabled={importando}
+          style={{
+            padding: "10px 20px",
+            background: importando ? "#94a3b8" : "#1e293b",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: importando ? "not-allowed" : "pointer",
+            fontWeight: "bold"
+          }}
+        >
+          {importando ? "Actualizando..." : "🔄 Actualizar Productos"}
+        </button>
 
         <h2>Sistema de Inventario</h2>
 

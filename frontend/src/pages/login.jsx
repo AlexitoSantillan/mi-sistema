@@ -33,8 +33,34 @@ function Login() {
   };
 
   return (
-    <main className="login-page">
-      <form className="login-card" onSubmit={handleLogin}>
+    <main
+      className="login-page"
+      style={{
+        position: "relative",
+        backgroundImage: "url('/Logo.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0,0,0,0.55)",
+        }}
+      />
+
+      <form
+        className="login-card"
+        onSubmit={handleLogin}
+        style={{
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <img src="/Logo.png" alt="Logo Albeyro" style={{ display: "block", margin: "0 auto 20px auto", height: "80px", objectFit: "contain" }} />
+
         <div>
           <h1>Confiteria Albeyro</h1>
           <p>Control de inventario y vencimientos</p>
