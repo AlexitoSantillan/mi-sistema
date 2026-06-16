@@ -81,10 +81,22 @@ function Vencimientos() {
       return;
     }
 
+    const cantidadNumerica = Number(cantidad);
+
+    if (!Number.isFinite(cantidadNumerica) || cantidadNumerica <= 0) {
+      alert("La cantidad debe ser mayor a cero");
+      return;
+    }
+
+    if (cantidadNumerica > stockActual) {
+      alert("La cantidad no puede superar las existencias actuales");
+      return;
+    }
+
     const payload = {
       producto_codigo: productoSeleccionado.value,
-      lote,
-      cantidad,
+      lote: lote.trim(),
+      cantidad: cantidadNumerica,
       fecha_vencimiento: fecha
     };
 
@@ -146,7 +158,7 @@ function Vencimientos() {
       .toLowerCase()
       .includes(busqueda.toLowerCase());
 
-    const vencido = new Date(item.fecha_vencimiento) < new Date();
+    const vencido = new Date(`${item.fecha_vencimiento}T00:00:00`) < new Date();
     const stockBajo = Number(item.cantidad_real) < 20;
 
     if (filtroEstado === "VENCIDOS") return coincideBusqueda && vencido;
@@ -286,7 +298,7 @@ function Vencimientos() {
 
         <tbody>
           {datosPagina.map((item) => {
-            const vencido = new Date(item.fecha_vencimiento) < new Date();
+            const vencido = new Date(`${item.fecha_vencimiento}T00:00:00`) < new Date();
             const stockBajo = Number(item.cantidad_real) < 20;
 
             return (

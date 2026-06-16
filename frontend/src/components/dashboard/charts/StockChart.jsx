@@ -15,8 +15,11 @@ function StockChart() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    api.get("/dashboard/chart/stock")
-      .then(setData);
+    api.get("/dashboard/stock-general")
+      .then((res) => setData(res.data))
+      .catch((error) => {
+        console.error("Error loading stock chart:", error);
+      });
   }, []);
 
   return (

@@ -1,17 +1,22 @@
 const db = require("../database/db");
 
-const obtenerDashboard = () => {
+const STOCK_TOTAL_SQL = `
+  (COALESCE(stock_en_cajas, 0) * COALESCE(cantidad_por_caja, 0)) +
+  COALESCE(stock_en_unidades, 0)
+`;
 
-  return new Promise((resolve, reject) => {
-
+const obtenerDashboard = () =>
+  new Promise((resolve, reject) => {
     db.get(
       `
-      SELECT COUNT(*) as total
+      SELECT
+        COUNT(*) AS totalProductos,
+        COALESCE(SUM(${STOCK_TOTAL_SQL}), 0) AS existenciaTotal,
+        SUM(CASE WHEN ${STOCK_TOTAL_SQL} <= 5 THEN 1 ELSE 0 END) AS bajoStock
       FROM productos
       `,
       [],
-      (err, totalProductos) => {
-
+      (err, productos) => {
         if (err) {
           reject(err);
           return;
@@ -19,42 +24,28 @@ const obtenerDashboard = () => {
 
         db.get(
           `
-          SELECT
-            SUM(stock_cajas) as cajas,
-            SUM(stock_unidades) as unidades
-          FROM productos
+          SELECT COUNT(*) AS vencidos
+          FROM vencimientos
+          WHERE date(fecha_vencimiento) < date('now')
           `,
           [],
-          (err, stockData) => {
-
+          (err, vencimientos) => {
             if (err) {
               reject(err);
               return;
             }
 
             resolve({
-              totalProductos:
-                totalProductos.total || 0,
-
-              stockCajas:
-                stockData.cajas || 0,
-
-              stockUnidades:
-                stockData.unidades || 0,
-
-              porVencer: 15,
-              vencidos: 4,
+              totalProductos: productos.totalProductos || 0,
+              existenciaTotal: productos.existenciaTotal || 0,
+              bajoStock: productos.bajoStock || 0,
+              vencidos: vencimientos.vencidos || 0,
             });
-
           }
         );
-
       }
     );
-
   });
-
-};
 
 module.exports = {
   obtenerDashboard,

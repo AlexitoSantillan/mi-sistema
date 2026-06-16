@@ -1,66 +1,73 @@
 import { useState } from "react";
+import api from "../services/api";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      alert("Completa los campos");
-      return;
-    }
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      setLoading(true);
-
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+      const res = await api.post("/auth/login", {
+        username: username.trim(),
+        password,
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        localStorage.setItem("auth", "true");
+      if (res.data?.success && res.data?.token) {
+        localStorage.setItem("token", res.data.token);
         window.location.href = "/";
-      } else {
-        alert("Credenciales incorrectas");
+        return;
       }
+
+      setError("Credenciales incorrectas");
     } catch (error) {
-      console.error(error);
-      alert("Error al conectar con el servidor");
+      setError(error.response?.data?.message || "No se pudo iniciar sesion");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <div className="card">
-        <h2>Login</h2>
+    <main className="login-page">
+      <form className="login-card" onSubmit={handleLogin}>
+        <div>
+          <h1>Confiteria Albeyro</h1>
+          <p>Control de inventario y vencimientos</p>
+        </div>
 
-        <input
-          placeholder="Usuario"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+        <label>
+          Usuario
+          <input
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            placeholder="admin"
+          />
+        </label>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <label>
+          Contrasena
+          <input
+            autoComplete="current-password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="admin"
+          />
+        </label>
 
-        <button onClick={handleLogin} disabled={loading}>
+        {error && <div className="login-error">{error}</div>}
+
+        <button type="submit" disabled={loading}>
           {loading ? "Ingresando..." : "Ingresar"}
         </button>
-      </div>
-    </div>
+      </form>
+    </main>
   );
 }
 

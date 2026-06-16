@@ -30,13 +30,6 @@ function Dashboard() {
   const [controlStock, setControlStock] = useState([]);
   const [vencimientosEstado, setVencimientosEstado] = useState([]);
 
-  // =========================
-  // LOAD DATA
-  // =========================
-  useEffect(() => {
-    cargarDatos();
-  }, []);
-
   const cargarDatos = async () => {
 
     try {
@@ -62,6 +55,13 @@ function Dashboard() {
     }
 
   };
+
+  // =========================
+  // LOAD DATA
+  // =========================
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
   // =========================
   // LOADING

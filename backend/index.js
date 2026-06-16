@@ -1,38 +1,57 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-
-const app = express();
 
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const vencimientoRoutes = require("./routes/vencimientoRoutes");
+const verificarToken = require("./middleware/authMiddleware");
 
 const { importarProductos } = require("./services/importarProductos");
-const { iniciarCron } = require("./cron/alertasCron"); // ✔ CORRECTO
+const { iniciarCron } = require("./cron/alertasCron");
 
-app.use(cors());
-app.use(express.json());
+const app = express();
 
-app.use("/api/productos", productRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/vencimientos", vencimientoRoutes);
+const PORT = Number(process.env.PORT || 3001);
+const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:5173";
 
-// TEST API
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || origin === allowedOrigin) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error("Origen CORS no permitido"));
+  },
+}));
+app.use(express.json({ limit: "1mb" }));
+
 app.get("/api/test", (req, res) => {
   res.json({
-    mensaje: "Backend conectado correctamente 🚀"
+    mensaje: "Backend conectado correctamente",
   });
 });
 
-const PORT = 3001;
+app.use("/api/auth", authRoutes);
+app.use("/api/productos", verificarToken, productRoutes);
+app.use("/api/dashboard", verificarToken, dashboardRoutes);
+app.use("/api/vencimientos", verificarToken, vencimientoRoutes);
 
-// cargar productos
-importarProductos();
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
 
-app.listen(PORT, () => {
+app.use((err, req, res, next) => {
+  console.error("Error no controlado:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
+
+app.listen(PORT, async () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 
-  iniciarCron(); // ✔ ahora sí funciona
+  await importarProductos();
+  iniciarCron();
 });

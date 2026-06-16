@@ -1,35 +1,26 @@
-import { Link } from "react-router-dom";
-
 function Navbar() {
   const logout = () => {
+    localStorage.removeItem("token");
     localStorage.removeItem("auth");
     window.location.href = "/login";
   };
 
   return (
     <nav className="navbar">
-
-      {/* LOGO */}
       <div className="navbar-logo">
         Sistema Vencimiento Confiteria Albeyro
       </div>
 
-      {/* MENUS */}
       <div className="navbar-links">
-        <Link to="/">Dashboard</Link>
-
-        <Link to="/vencimientos">
-          Vencimientos
-        </Link>
+        <a href="/">Dashboard</a>
+        <a href="/vencimientos">Vencimientos</a>
       </div>
 
-      {/* DERECHA */}
       <div className="navbar-right">
         <button onClick={logout}>
-          Cerrar sesión
+          Cerrar sesion
         </button>
       </div>
-
     </nav>
   );
 }

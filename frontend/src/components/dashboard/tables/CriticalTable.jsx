@@ -5,10 +5,6 @@ function CriticalTable() {
 
   const [data, setData] = useState([]);
 
-  useEffect(() => {
-    load();
-  }, []);
-
   const load = async () => {
     try {
       const res = await getCriticalProducts();
@@ -17,6 +13,10 @@ function CriticalTable() {
       console.error("Error loading critical products:", err);
     }
   };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <table>

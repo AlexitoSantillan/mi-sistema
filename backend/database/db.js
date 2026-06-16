@@ -1,14 +1,17 @@
+const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
 // =========================
 // CONEXION DB
 // =========================
-const db = new sqlite3.Database("albeyro.db", (err) => {
+const dbPath = process.env.DB_PATH || path.join(__dirname, "..", "albeyro.db");
+
+const db = new sqlite3.Database(dbPath, (err) => {
 
   if (err) {
     console.error("Error al conectar DB", err);
   } else {
-    console.log("Base de datos conectada");
+    console.log(`Base de datos conectada: ${dbPath}`);
   }
 
 });
@@ -32,6 +35,11 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_productos_descripcion
+    ON productos (descripcion)
+  `);
+
   // =========================
   // VENCIMIENTOS
   // =========================
@@ -44,6 +52,16 @@ db.serialize(() => {
       fecha_vencimiento TEXT,
       estado TEXT
     )
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_vencimientos_producto
+    ON vencimientos (producto_codigo)
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_vencimientos_fecha
+    ON vencimientos (fecha_vencimiento)
   `);
 
   db.run(`
@@ -85,6 +103,11 @@ db.serialize(() => {
       dias_alerta INTEGER,
       fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+  `);
+
+  db.run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_alertas_enviadas_unica
+    ON alertas_enviadas (vencimiento_id, lote, fecha_vencimiento, dias_alerta)
   `);
 
 });

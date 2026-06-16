@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function Historial() {
-
   const [productos] = useState([
     { id: 1, nombre: "Galleta Soda" },
     { id: 2, nombre: "Leche Gloria" },
-    { id: 3, nombre: "Arroz Costeño" },
+    { id: 3, nombre: "Arroz Costeno" },
   ]);
 
   const [productoSeleccionado, setProductoSeleccionado] = useState("");
@@ -13,24 +12,26 @@ function Historial() {
   const [fecha, setFecha] = useState("");
 
   const guardarHistorial = async () => {
-
     if (!productoSeleccionado || !stock || !fecha) {
       alert("Completa todos los campos");
       return;
     }
 
     const producto = productos.find(
-      (p) => p.id == productoSeleccionado
+      (p) => p.id === Number(productoSeleccionado)
     );
 
-    try {
+    if (!producto) {
+      alert("Producto invalido");
+      return;
+    }
 
+    try {
       const res = await fetch("/api/historial", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           producto_id: producto.id,
           nombre: producto.nombre,
@@ -42,76 +43,63 @@ function Historial() {
       const data = await res.json();
 
       if (data.success) {
-
         alert("Historial guardado");
 
         setProductoSeleccionado("");
         setStock("");
         setFecha("");
       }
-
-    } catch (error) {
-
+    } catch {
       alert("Error al guardar");
     }
   };
 
   return (
     <div className="container">
-
       <div className="card">
-
         <h2>Registrar Historial Diario</h2>
 
-        {/* PRODUCTO */}
         <select
           value={productoSeleccionado}
-          onChange={(e) =>
-            setProductoSeleccionado(e.target.value)
-          }
+          onChange={(event) => setProductoSeleccionado(event.target.value)}
         >
           <option value="">
             Seleccionar producto
           </option>
 
-          {productos.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombre}
+          {productos.map((producto) => (
+            <option key={producto.id} value={producto.id}>
+              {producto.nombre}
             </option>
           ))}
         </select>
 
-        <br /><br />
+        <br />
+        <br />
 
-        {/* STOCK */}
         <input
           type="number"
           placeholder="Stock actual"
           value={stock}
-          onChange={(e) =>
-            setStock(e.target.value)
-          }
+          onChange={(event) => setStock(event.target.value)}
         />
 
-        <br /><br />
+        <br />
+        <br />
 
-        {/* FECHA */}
         <input
           type="date"
           value={fecha}
-          onChange={(e) =>
-            setFecha(e.target.value)
-          }
+          onChange={(event) => setFecha(event.target.value)}
         />
 
-        <br /><br />
+        <br />
+        <br />
 
         <button onClick={guardarHistorial}>
           Guardar Historial
         </button>
-
       </div>
-
     </div>
   );
 }

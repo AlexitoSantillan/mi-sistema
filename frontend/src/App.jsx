@@ -1,19 +1,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Navbar from "./components/layout/Navbar";
 import Vencimientos from "./pages/Vencimientos";
 import "./index.css";
 
 function App() {
   const [isAuth, setIsAuth] = useState(
-    localStorage.getItem("auth") === "true"
+    !!localStorage.getItem("token")
   );
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuth(localStorage.getItem("auth") === "true");
+      setIsAuth(!!localStorage.getItem("token"));
     };
 
     window.addEventListener("storage", checkAuth);
@@ -30,15 +30,19 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={!isAuth ? <Login /> : <Navigate to="/" />}
+          element={!isAuth ? <Login /> : <Navigate to="/" replace />}
         />
         <Route
           path="/"
-          element={isAuth ? <Dashboard /> : <Navigate to="/login" />}
+          element={isAuth ? <Dashboard /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/vencimientos"
           element={isAuth ? <Vencimientos /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="*"
+          element={<Navigate to={isAuth ? "/" : "/login"} replace />}
         />
       </Routes>
     </BrowserRouter>
