@@ -7,7 +7,7 @@ const PRODUCTOS_SQL_PATH =
   process.env.PRODUCTOS_SQL_PATH ||
   "D:\\generar_sql\\productos.sql";
 
-const FALLBACK_PRODUCTOS_SQL_PATH = path.join(__dirname, "..", "uploads", "productos.sql");
+const FALLBACK_PRODUCTOS_SQL_PATH = "D:\\generar_sql\\productos.sql";
 
 const INSERT_PRODUCTOS_REGEX =
   /INSERT\s+INTO\s+productos\s*\(\s*codigo\s*,\s*descripcion\s*,\s*unidad_medida\s*,\s*cantidad_por_caja\s*,\s*stock_en_cajas\s*,\s*stock_en_unidades\s*\)\s*VALUES\s*\(\s*'((?:''|[^'])*)'\s*,\s*'((?:''|[^'])*)'\s*,\s*'((?:''|[^'])*)'\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*;/gi;

@@ -6,6 +6,7 @@ if (!process.env.JWT_SECRET) {
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -43,6 +44,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/productos", verificarToken, productRoutes);
 app.use("/api/dashboard", verificarToken, dashboardRoutes);
 app.use("/api/vencimientos", verificarToken, vencimientoRoutes);
+
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get(/.*/, (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
 
 app.use((req, res) => {
   res.status(404).json({ error: "Ruta no encontrada" });
